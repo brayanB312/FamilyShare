@@ -1,2 +1,0 @@
-# FamilyShare
-proyecto
