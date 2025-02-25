@@ -27,7 +27,7 @@ export default function Home() {
         <div className="max-w-4xl w-full rounded overflow-hidden shadow-sm flex flex-col md:flex-row">
 
           <div className="w-full md:w-1/2 p-4 flex flex-col items-center justify-center">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-2 text-center">Todos tus documentos en un solo lugar</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-2 text-center">Todos tus documentos en un solo lugar!</h2>
             <p className="text-lg md:text-xl text-gray-700 text-center">Almacena tus documentos y accede a ellos desde donde sea.</p>
           </div>
           <div className="w-full md:w-1/2">
