@@ -18,28 +18,16 @@ const Navbar = () => {
 
           {/* Menú para pantallas grandes */}
           <div className="hidden md:flex space-x-6">
-            <Link
-              href="/"
-              className="text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
+            <Link href="/" className="nav-link">
               Inicio
             </Link>
-            <Link
-              href="/about"
-              className="text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
+            <Link href="/about" className="nav-link">
               Sobre Nosotros
             </Link>
-            <Link
-              href="/services"
-              className="text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
+            <Link href="/services" className="nav-link">
               Servicios
             </Link>
-            <Link
-              href="/contact"
-              className="text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
+            <Link href="/contact" className="nav-link">
               Contacto
             </Link>
           </div>
@@ -53,37 +41,27 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Menú desplegable en móvil */}
-      {isOpen && (
-        <div className="md:hidden bg-green-800">
-          <div className="space-y-2 py-3 px-4">
-            <Link
-              href="/"
-              className="block text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
-              Inicio
-            </Link>
-            <Link
-              href="/about"
-              className="block text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
-              Sobre Nosotros
-            </Link>
-            <Link
-              href="/services"
-              className="block text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
-              Servicios
-            </Link>
-            <Link
-              href="/contact"
-              className="block text-slate-50 no-underline hover:text-gray-400 transition duration-300 ease-in-out"
-            >
-              Contacto
-            </Link>
-          </div>
+      {/* Menú desplegable en móvil con animación */}
+      <div
+        className={`md:hidden bg-green-800 overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="space-y-2 py-3 px-4">
+          <Link href="/" className="nav-link block">
+            Inicio
+          </Link>
+          <Link href="/about" className="nav-link block">
+            Sobre Nosotros
+          </Link>
+          <Link href="/services" className="nav-link block">
+            Servicios
+          </Link>
+          <Link href="/contact" className="nav-link block">
+            Contacto
+          </Link>
         </div>
-      )}
+      </div>
     </nav>
   );
 };
