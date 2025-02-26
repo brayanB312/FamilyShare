@@ -8,11 +8,11 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-green-700 text-white shadow-md">
+    <nav className="bg-white text-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-white no-underline">
+          <Link href="/" className="text-xl font-bold text-black no-underline">
             FamilyShare
           </Link>
 
@@ -43,7 +43,7 @@ const Navbar = () => {
 
       {/* Menú desplegable en móvil con animación */}
       <div
-        className={`md:hidden bg-green-800 overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`md:hidden bg-cyan-800 overflow-hidden transition-all duration-300 ease-in ${
           isOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
