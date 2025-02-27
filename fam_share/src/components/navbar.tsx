@@ -18,18 +18,17 @@ const Navbar = () => {
 
           {/* Menú para pantallas grandes */}
           <div className="hidden md:flex space-x-6">
-            <Link href="/" className="nav-link">
-              Inicio
-            </Link>
-            <Link href="/about" className="nav-link">
-              Sobre Nosotros
-            </Link>
-            <Link href="/services" className="nav-link">
-              Servicios
-            </Link>
-            <Link href="/contact" className="nav-link">
-              Contacto
-            </Link>
+            {["Inicio", "Sobre Nosotros", "Servicios", "Contacto"].map(
+              (text, index) => (
+                <Link
+                  key={index}
+                  href={`/${text === "Inicio" ? "" : text.toLowerCase().replace(/\s/g, "")}`}
+                  className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-black after:transition-all after:duration-300 hover:after:w-full"
+                >
+                  {text}
+                </Link>
+              )
+            )}
           </div>
 
           {/* Botón de menú móvil */}
@@ -43,28 +42,25 @@ const Navbar = () => {
 
       {/* Menú desplegable en móvil con animación */}
       <div
-        className={`md:hidden bg-neutral-100 overflow-hidden transition-all duration-300 ease-in ${
-          isOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+        className={`md:hidden bg-zinc-100 overflow-hidden transition-all duration-300 ease-in ${
+          isOpen ? "max-h-[250px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="space-y-2 py-3 px-4">
-          <Link href="/" className="nav-link block">
-            Inicio
-          </Link>
-          <Link href="/about" className="nav-link block">
-            Sobre Nosotros
-          </Link>
-          <Link href="/services" className="nav-link block">
-            Servicios
-          </Link>
-          <Link href="/contact" className="nav-link block">
-            Contacto
-          </Link>
+          {["Inicio", "Sobre Nosotros", "Servicios", "Contacto"].map(
+            (text, index) => (
+              <Link
+                key={index}
+                href={`/${text === "Inicio" ? "" : text.toLowerCase().replace(/\s/g, "")}`}
+                className="block px-4 py-2 rounded-sm transition-all duration-300 hover:bg-zinc-200"
+              >
+                {text}
+              </Link>
+            )
+          )}
         </div>
       </div>
     </nav>
-
-
   );
 };
 
