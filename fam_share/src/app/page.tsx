@@ -1,3 +1,5 @@
+"use client";
+
 import "@/app/globals.css"; 
 import "@/app/styles/inicio.css";
 import Navbar from "@/components/navbar";
@@ -7,7 +9,7 @@ export default function Home() {
     <>
       <Navbar />
 
-      <section className="relative bg-white text-black py-20 px-6 flex flex-col items-center text-center">
+      <section id="main_section" className="relative bg-white text-black py-20 px-6 flex flex-col items-center text-center">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">Bienvenido a Nuestra Plataforma</h1>
           <p className="mt-4 text-lg md:text-xl text-gray-800">Descubre soluciones innovadoras para mejorar tu negocio y potenciar tu presencia digital.</p>
@@ -32,6 +34,15 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <style jsx>
+        {`
+            #margin_section {
+              margin-top:100px;
+            }
+        `}
+      </style>
+
     </>
   );
 }

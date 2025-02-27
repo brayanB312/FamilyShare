@@ -8,7 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white text-black">
+    <nav className="fixed top-0 left-0 w-full bg-white text-black shadow-sm z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -43,7 +43,7 @@ const Navbar = () => {
 
       {/* Menú desplegable en móvil con animación */}
       <div
-        className={`md:hidden bg-cyan-800 overflow-hidden transition-all duration-300 ease-in ${
+        className={`md:hidden bg-neutral-100 overflow-hidden transition-all duration-300 ease-in ${
           isOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -63,6 +63,8 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+
+
   );
 };
 
