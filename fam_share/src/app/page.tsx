@@ -1,4 +1,5 @@
 import "@/app/globals.css"; 
+import "@/app/styles/inicio.css";
 import Navbar from "@/components/navbar";
 
 export default function Home() {
