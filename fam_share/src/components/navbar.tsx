@@ -41,8 +41,8 @@ const Navbar = () => {
       </div>
 
       {/* Menú desplegable en móvil con animación */}
-      <div
-        className={`md:hidden bg-zinc-100 overflow-hidden transition-all duration-300 ease-in ${
+      <div id = "dropdown_menu"
+        className={`md:hidde overflow-hidden transition-all duration-300 ease-in ${
           isOpen ? "max-h-[250px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -52,7 +52,7 @@ const Navbar = () => {
               <Link
                 key={index}
                 href={`/${text === "Inicio" ? "" : text.toLowerCase().replace(/\s/g, "")}`}
-                className="block px-4 py-2 rounded-sm transition-all duration-300 hover:bg-zinc-200"
+                className="block px-4 py-2 rounded-md hover:bg-gray-200"
               >
                 {text}
               </Link>
@@ -60,6 +60,15 @@ const Navbar = () => {
           )}
         </div>
       </div>
+
+          <style jsx>
+            {`
+              #dropdown_menu{
+                background-color:#f6f6f6;
+              }
+            `}
+          </style>
+
     </nav>
   );
 };
