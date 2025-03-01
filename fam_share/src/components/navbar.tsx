@@ -64,7 +64,7 @@ const Navbar = () => {
           <style jsx>
             {`
               #dropdown_menu{
-                background-color:#f6f6f6;
+                background-color:#f3f5f5;
               }
             `}
           </style>
