@@ -17,8 +17,8 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold leading-tight text-black">Bienvenido a FamilyShare</h1>
           <p className="mt-4 text-lg md:text-xl text-gray-800">Almacena, organiza y accede de manera segura a tus documentos oficiales en un solo lugar</p>
           <div className="mt-6 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
-            <a href="#" className="no-underline bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-5 rounded-lg text-lg font-medium transition">Crea un cuenta</a>
-            <a href="#" className="no-underline border border-gray-900 py-2.5 px-5 rounded-lg text-lg font-medium hover:bg-zinc-200 hover:text-gray-900 transition">Iniciar sesion</a>
+            <a href="/register" className="no-underline bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-5 rounded-lg text-lg font-medium transition">Crea un cuenta</a>
+            <a href="/login" className="no-underline border border-gray-900 py-2.5 px-5 rounded-lg text-lg font-medium hover:bg-zinc-200 hover:text-gray-900 transition">Iniciar sesion</a>
           </div>
         </div>
       </section>

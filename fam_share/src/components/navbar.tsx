@@ -13,8 +13,8 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo y Título */}
-          <Link href="/" className="flex items-center text-xl font-bold text-black no-underline">
-            <Image src="/logo.jpg" alt="Logo" width={90} height={90}/>
+          <Link href="/" className="flex items-center text-xl space-x-4 font-bold text-black no-underline">
+            <Image src="/logo.png" alt="Logo" width={40} height={40}/>
             <span>FamilyShare</span>
           </Link>
 
