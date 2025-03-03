@@ -45,10 +45,10 @@ export default function Home() {
         <h2 className="text-xl font-semibold mb-6">Dashboard</h2>
         <nav>
           <ul>
-            <li className="mb-4 flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer">
+            <li className="mb-4 flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
               <FileText size={20} /> Mis Documentos
             </li>
-            <li className="mb-4 flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer">
+            <li className="mb-4 flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
               <Upload size={20} /> Subir Documento
             </li>
           </ul>
