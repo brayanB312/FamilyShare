@@ -48,7 +48,7 @@ const Navbar = () => {
         }`}
       >
         <div className="space-y-2 py-3 px-4">
-          {["Inicio", "Sobre Nosotros", "Servicios", "Informacion"].map((text, index) => (
+          {["Inicio", "Sobre Nosotros", "Planes", "Informacion"].map((text, index) => (
             <Link
               key={index}
               href={`/${text === "Inicio" ? "" : text.toLowerCase().replace(/\s/g, "")}`}
