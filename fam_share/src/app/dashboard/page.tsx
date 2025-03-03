@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import "@/app/globals.css"; 
 import Navbar from "@/components/navbar";
@@ -7,6 +7,33 @@ import { Upload, FileText, Menu } from 'lucide-react';
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [dragging, setDragging] = useState(false);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file.name);
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragging(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setDragging(false);
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      setSelectedFile(file.name);
+    }
+  };
 
   return (
     <>
@@ -42,11 +69,18 @@ export default function Home() {
         <main className="flex-1 p-6">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4">Subir un Documento</h2>
-            <div className="border-2 border-dashed border-gray-300 p-10 text-center rounded-lg">
+            <div 
+              className={`border-2 border-dashed p-10 text-center rounded-lg ${dragging ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <p className="text-gray-500 mb-4">Arrastra y suelta un archivo aquí o</p>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+              <label className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer">
                 Seleccionar Archivo
-              </button>
+                <input type="file" className="hidden" onChange={handleFileChange} />
+              </label>
+              {selectedFile && <p className="text-gray-700 mt-4">Archivo seleccionado: {selectedFile}</p>}
             </div>
           </div>
         </main>
