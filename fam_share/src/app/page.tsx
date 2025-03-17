@@ -1,5 +1,3 @@
-"use client";
-
 import "@/app/globals.css"; 
 import "@/app/styles/inicio.css";
 import Navbar from "@/components/navbar";
@@ -27,7 +25,7 @@ export default function Home() {
         <div className="max-w-4xl w-full rounded overflow-hidden shadow-sm flex flex-col md:flex-row">
 
           <div className="w-full md:w-1/2 p-4 flex flex-col items-center justify-center">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-2 text-center">Todos tus documentos en un solo lugar!</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-2 text-center">Todos tus documentos en un solo lugar</h2>
             <p className="text-lg md:text-xl text-gray-700 text-center">Almacena tus documentos y accede a ellos desde donde sea.</p>
           </div>
           <div className="w-full md:w-1/2">
@@ -35,8 +33,47 @@ export default function Home() {
           </div>
 
         </div>
-
       </section>
+
+      <section className="relative bg-white text-black py-24 px-6 flex flex-col items-center text-center">
+        <div className="max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-semibold mb-6">
+            Almacenamiento en la nube seguro con el que puedes contar
+          </h2>
+          <p className="text-lg md:text-xl text-gray-700">
+            Conserva tus datos en la infraestructura confiable de FamilyShare, que se integra a la perfección en tus apps de Workspace.
+          </p>
+        </div>
+        
+        <div className="flex flex-col md:flex-row gap-12 mt-12 max-w-6xl">
+          <div className="flex-1 text-center">
+            <img src="/nube2.webp" alt="Nativo de la nube" className="mx-auto mb-8" />
+            <h3 className="text-xl font-semibold">Nativo de la nube</h3>
+            <p className="text-gray-700">
+              Un enfoque centrado en la nube y basado en el navegador que se actualiza constantemente sin tener que instalar nada.
+            </p>
+          </div>
+
+          <div className="flex-1 text-center">
+            <img src="/aarquitecturaweb.jpeg" alt="Arquitectura de confianza cero" className="mx-auto mb-8" />
+            <h3 className="text-xl font-semibold">Arquitectura de confianza cero</h3>
+            <p className="text-gray-700">
+              Tus datos valiosos se protegen con funciones de seguridad sólidas, como la encriptación del cliente y Vault, con un enfoque de confianza cero.
+            </p>
+          </div>
+
+          <div className="flex-1 text-center">
+            <img src="/certify.avif" alt="Certificación en tus archivos" className="mx-auto mb-8" />
+            <h3 className="text-xl font-semibold">Certificación en tus archivos</h3>
+            <p className="text-gray-700">
+              Ofrecemos confianza en la validación de tus archivos comprometiéndonos a que tus documentos sean legales con una verificación.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      
+
 
     </>
   );
