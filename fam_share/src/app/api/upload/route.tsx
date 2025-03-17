@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const filename = `${Date.now()}_${file.name}`;
     
     // Define upload directory
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
+    const uploadDir = '/root/uploads';
     
     // Create directory if it doesn't exist
     if (!existsSync(uploadDir)) {
