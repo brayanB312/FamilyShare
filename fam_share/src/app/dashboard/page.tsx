@@ -1,16 +1,8 @@
-"use client";
+"use client"
 
-import "@/app/globals.css"; 
-import Navbar from "@/components/navbar";
-import { useState } from 'react';
-import { Upload, FileText, Menu } from 'lucide-react';
+import FamilyShareLayout from "../styles/Dashboard"
 
-export default function Home() {
-  return (
-    <>
-      <Navbar />
-
-      
-    </>
-  );
+export default function Page() {
+  return <FamilyShareLayout />
 }
+
