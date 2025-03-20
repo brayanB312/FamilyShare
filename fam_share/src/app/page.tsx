@@ -56,9 +56,9 @@ export default function Home() {
 
           <div className="flex-1 text-center">
             <img src="/aarquitecturaweb.jpeg" alt="Arquitectura de confianza cero" className="mx-auto mb-8" />
-            <h3 className="text-xl font-semibold">Arquitectura de confianza cero</h3>
+            <h3 className="text-xl font-semibold">Arquitectura de confiable</h3>
             <p className="text-gray-700">
-              Tus datos valiosos se protegen con funciones de seguridad sólidas, como la encriptación del cliente y Vault, con un enfoque de confianza cero.
+              Tus datos valiosos se protegen con funciones de seguridad sólidas, como la encriptación del cliente y Vault, con un enfoque de confiabilidad.
             </p>
           </div>
 
