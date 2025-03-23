@@ -1,7 +1,7 @@
 {
-  "host": "192.168.1.225",  
+  "host": "192.168.0.19",  
   "port": 3306,
-  "user": "brayan",
+  "user": "root",
   "password": "Galdom$748",
   "database": "fam_share"
 }
