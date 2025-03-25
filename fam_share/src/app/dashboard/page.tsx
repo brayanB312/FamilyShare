@@ -1,8 +1,8 @@
 "use client"
 
-import FamilyShareLayout from "../styles/Dashboard"
+import Dashboard from "../../components/dashboard"
 
 export default function Page() {
-  return <FamilyShareLayout />
+  return <Dashboard />
 }
 
