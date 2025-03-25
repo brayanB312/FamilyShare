@@ -30,14 +30,46 @@ import {
 
 export default function Dashboard() {
   // User state
-  const [userName, setUserName] = useState("Usuario")
-
-  useEffect(() => {
-    const name = localStorage.getItem("user_name")
-    if (name) {
-      setUserName(name)
-    }
-  }, [])
+    const [userName, setUserName] = useState("Usuario");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploadMessage, setUploadMessage] = useState("");
+  
+    useEffect(() => {
+      const name = localStorage.getItem("user_name");
+      if (name) {
+        setUserName(name);
+      }
+    }, []);
+  
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0]; 
+      if (file && file.size <= 10 * 1024 * 1024) { // Máximo 10MB
+        setSelectedFile(file);
+        setUploadMessage("");
+      } else {
+        setUploadMessage("El archivo debe ser menor a 10MB");
+      }
+    };
+  
+    const handleFileUpload = async () => {
+      if (!selectedFile) {
+        setUploadMessage("Por favor, selecciona un archivo");
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("user", userName);
+  
+      try {
+        const response = await axios.post("/api/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setUploadMessage("Archivo subido exitosamente");
+      } catch (error) {
+        setUploadMessage("Error al subir el archivo");
+      }
+    };
 
   // UI state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
