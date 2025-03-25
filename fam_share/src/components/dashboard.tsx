@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { LayoutDashboard, FileText, Users, Share2, User, Menu, X } from "lucide-react"
 import NavbarDashboard from "../components/navbarDashboard"
 import DashboardContent from "../components/dashboard-content"
@@ -9,7 +9,19 @@ import Familiares from "../components/familiares"
 import CompartirDocumentos from "../components/compartir-documentos"
 import MiCuenta from "../components/mi-cuenta"
 
+
 export default function Dashboard() {
+
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    // Obtener el nombre del usuario desde localStorage
+    const name = localStorage.getItem("user_name");
+    if (name) {
+      setUserName(name);
+    }
+  }, []);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeItem, setActiveItem] = useState("Dashboard")
 
@@ -20,6 +32,7 @@ export default function Dashboard() {
     { name: "Compartir Documentos", icon: <Share2 className="w-5 h-5" /> },
     { name: "Mi Cuenta", icon: <User className="w-5 h-5" /> },
   ]
+  
 
   // Función para renderizar el contenido según el ítem activo
   const renderContent = () => {
@@ -43,6 +56,10 @@ export default function Dashboard() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Navbar */}
       <NavbarDashboard />
+
+      <div className="flex-grow p-6 mt-16 ml-64"> {/* Añadir un margen izquierdo para el espacio de la sidebar */}
+        <h1 className="text-3xl font-bold">Bienvenido, {userName}</h1>
+      </div>
 
       <div className="flex flex-1 pt-16">
         {/* Sidebar para móvil - botón flotante */}

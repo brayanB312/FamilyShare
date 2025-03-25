@@ -152,15 +152,6 @@ export default function DashboardContent() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Encabezado de página */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard</h1>
-        </div>
-        <p className="text-xs sm:text-sm text-gray-500">
-          Gestiona y visualiza todos tus documentos y archivos familiares
-        </p>
-      </div>
 
       {/* Tarjetas de resumen */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

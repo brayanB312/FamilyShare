@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "@/app/login/login.css";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,21 +17,19 @@ export default function Login() {
     setError("");
     
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        router.push("/dashboard"); // Redirigir al dashboard tras el login exitoso
-      } else {
-        setError(data.message || "Credenciales incorrectas");
+      // Realiza la solicitud de login
+      const response = await axios.post("/api/login", { email, password });
+
+      if (response.status === 200) {
+        // Si el inicio de sesión es exitoso, guarda el nombre completo en localStorage
+        localStorage.setItem("user_name", response.data.user.nombre);
+
+        // Redirige al dashboard
+        router.push("/dashboard");
       }
-    } catch (err) {
-      setError("Error al conectar con el servidor");
+    } catch (error) {
+      // Si ocurre un error (correo o contraseña incorrectos)
+      setError("Correo o contraseña incorrectos.");
     }
   };
 
@@ -49,6 +48,7 @@ export default function Login() {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Mostrar el mensaje de error si existe */}
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
           
           <div>
@@ -98,8 +98,10 @@ export default function Login() {
             </button>
           </div>
         </form>
+        
+        {/* Links adicionales */}
         <p className="mt-4 text-center text-sm text-gray-600">
-          ¿No tienes una cuenta? {" "}
+          ¿No tienes una cuenta?{" "}
           <Link href="/registro" className="font-semibold text-indigo-600 hover:text-indigo-500">
             Regístrate aquí
           </Link>
