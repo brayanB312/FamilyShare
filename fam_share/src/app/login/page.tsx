@@ -1,7 +1,39 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "@/app/login/login.css";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        router.push("/dashboard"); // Redirigir al dashboard tras el login exitoso
+      } else {
+        setError(data.message || "Credenciales incorrectas");
+      }
+    } catch (err) {
+      setError("Error al conectar con el servidor");
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -16,7 +48,9 @@ export default function Login() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form action="#" method="POST" className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+          
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-900">
               Correo electrónico
@@ -29,17 +63,17 @@ export default function Login() {
                 required
                 autoComplete="email"
                 placeholder="ejemplo@correo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 border border-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600 sm:text-sm"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-                Contraseña
-              </label>
-            </div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
+              Contraseña
+            </label>
             <div className="mt-2">
               <input
                 id="password"
@@ -48,6 +82,8 @@ export default function Login() {
                 required
                 autoComplete="current-password"
                 placeholder="Introduce tu contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 border border-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600 sm:text-sm"
               />
             </div>
@@ -63,7 +99,7 @@ export default function Login() {
           </div>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          ¿No tienes una cuenta?{" "}
+          ¿No tienes una cuenta? {" "}
           <Link href="/registro" className="font-semibold text-indigo-600 hover:text-indigo-500">
             Regístrate aquí
           </Link>
