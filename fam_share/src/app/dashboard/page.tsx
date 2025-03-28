@@ -1,364 +1,286 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   LayoutDashboard,
   FileText,
   Users,
   Share2,
-  User,
   Menu,
   X,
   LogOut,
-  Search,
-  Filter,
-  Plus,
-  ArrowUpDown,
-  Eye,
-  Download,
-  Edit,
-  Trash2,
-  Mail,
-  Phone,
   CheckCircle,
   XCircle,
-  QrCode,
-  EyeOff,
-  Clock,
-  Upload,
+  Plus,
+  Download,
+  Search,
+  Filter,
+  Trash2,
 } from "lucide-react"
+import Link from "next/link"
 
-export default function Dashboard() {
-  // User state
-    const [userName, setUserName] = useState("Usuario");
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [uploadMessage, setUploadMessage] = useState("");
-  
-    useEffect(() => {
-      const name = localStorage.getItem("user_name");
-      if (name) {
-        setUserName(name);
-      }
-    }, []);
-  
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]; 
-      if (file && file.size <= 10 * 1024 * 1024) { // Máximo 10MB
-        setSelectedFile(file);
-        setUploadMessage("");
-      } else {
-        setUploadMessage("El archivo debe ser menor a 10MB");
-      }
-    };
-  
-    const handleFileUpload = async () => {
-      if (!selectedFile) {
-        setUploadMessage("Por favor, selecciona un archivo");
-        return;
-      }
-  
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("user", userName);
-  
-      try {
-        const response = await axios.post("/api/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        setUploadMessage("Archivo subido exitosamente");
-      } catch (error) {
-        setUploadMessage("Error al subir el archivo");
-      }
-    };
+// CONEXIÓN CON BASE DE DATOS
+// Estas funciones deberían ser reemplazadas por llamadas reales a tu API o base de datos
+// Por ahora retornan arrays vacíos o valores por defecto
 
-  // UI state
+const fetchUserData = async () => {
+  // TODO: Implementar llamada real a la API para obtener datos del usuario
+  // Ejemplo: const response = await fetch('/api/user');
+  // return response.json();
+
+  // Por ahora retornamos un objeto con valores por defecto
+  return {
+    id: "user-001",
+    nombre: "Usuario",
+    apellido: "Demo",
+    email: "usuario@ejemplo.com",
+    telefono: "+52 555 123 4567",
+    fechaRegistro: "2023-01-01",
+    rol: "usuario",
+  }
+}
+
+const fetchDocumentos = async () => {
+  // TODO: Implementar llamada real a la API para obtener documentos
+  // Ejemplo: const response = await fetch('/api/documentos');
+  // return response.json();
+
+  // Por ahora retornamos un array vacío
+  return []
+}
+
+const fetchMisDocumentos = async () => {
+  // TODO: Implementar llamada real a la API para obtener documentos personales
+  // Ejemplo: const response = await fetch('/api/mis-documentos');
+  // return response.json();
+
+  // Por ahora retornamos un array vacío
+  return []
+}
+
+const fetchFamiliares = async () => {
+  // TODO: Implementar llamada real a la API para obtener familiares
+  // Ejemplo: const response = await fetch('/api/familiares');
+  // return response.json();
+
+  // Por ahora retornamos un array vacío
+  return []
+}
+
+const fetchDocumentosCompartidos = async () => {
+  // TODO: Implementar llamada real a la API para obtener documentos compartidos
+  // Ejemplo: const response = await fetch('/api/documentos-compartidos');
+  // return response.json();
+
+  // Por ahora retornamos un array vacío
+  return []
+}
+
+// Componente para las tarjetas de resumen
+const ResumenCard = ({ titulo, valor, icono, color }) => (
+  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <div className="flex items-center">
+      <div className={`p-3 rounded-full ${color} text-white mr-4`}>{icono}</div>
+      <div>
+        <p className="text-sm text-gray-500">{titulo}</p>
+        <p className="text-2xl font-bold">{valor}</p>
+      </div>
+    </div>
+  </div>
+)
+
+// Componente para mostrar cuando no hay datos
+const EmptyState = ({ message, icon }) => (
+  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+    <div className="bg-gray-100 p-4 rounded-full mb-4">{icon}</div>
+    <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+    <p className="text-sm text-gray-500 max-w-md">{message}</p>
+  </div>
+)
+
+export default function FamilyShare() {
+  // Estados para datos que vendrían de la base de datos
+  const [userData, setUserData] = useState(null)
+  const [documentos, setDocumentos] = useState([])
+  const [misDocumentos, setMisDocumentos] = useState([])
+  const [familiares, setFamiliares] = useState([])
+  const [documentosCompartidos, setDocumentosCompartidos] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Estados para la UI
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeItem, setActiveItem] = useState("Dashboard")
   const [showLogoutMenu, setShowLogoutMenu] = useState(false)
+
+  // Estados para el Dashboard
   const [searchTerm, setSearchTerm] = useState("")
   const [sortField, setSortField] = useState("nombre")
   const [sortDirection, setSortDirection] = useState("asc")
+  const [filteredDocuments, setFilteredDocuments] = useState([])
 
-  // Account settings state
-  const [activeTab, setActiveTab] = useState("Perfil")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  // Estados para modales
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showActionModal, setShowActionModal] = useState(false)
+  const [currentAction, setCurrentAction] = useState("")
+  const [currentItem, setCurrentItem] = useState(null)
 
-  // Menu items
+  // Función para manejar el filtrado
+  const handleFilter = () => {
+    setShowFilterModal(true)
+  }
+
+  // Función para manejar la adición de nuevos elementos
+  const handleAdd = (type) => {
+    setShowAddModal(true)
+    setCurrentAction(type)
+  }
+
+  // Función para manejar acciones en elementos (ver, descargar, editar, eliminar)
+  const handleAction = (action, item) => {
+    setShowActionModal(true)
+    setCurrentAction(action)
+    setCurrentItem(item)
+  }
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    alert("Cerrando sesión...")
+    // Aquí iría la lógica real de cierre de sesión
+  }
+
+  // Función para cerrar modales
+  const closeModals = () => {
+    setShowFilterModal(false)
+    setShowAddModal(false)
+    setShowActionModal(false)
+    setCurrentAction("")
+    setCurrentItem(null)
+  }
+
+  // Componente Modal simple
+  const Modal = ({ title, children, onClose }) => {
+    const modalRef = useRef(null)
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (modalRef.current && !modalRef.current.contains(event.target)) {
+          onClose()
+        }
+      }
+
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }, [onClose])
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div ref={modalRef} className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="flex justify-between items-center p-4 border-b">
+            <h3 className="text-lg font-medium">{title}</h3>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-4">{children}</div>
+          <div className="p-4 border-t flex justify-end space-x-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90"
+            >
+              Aceptar
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Simulación de carga de datos desde una API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true)
+
+        // Cargar datos del usuario
+        const user = await fetchUserData()
+        setUserData(user)
+
+        // Cargar documentos
+        const docs = await fetchDocumentos()
+        setDocumentos(docs)
+        setFilteredDocuments(docs)
+
+        // Cargar mis documentos
+        const misDocs = await fetchMisDocumentos()
+        setMisDocumentos(misDocs)
+
+        // Cargar familiares
+        const fams = await fetchFamiliares()
+        setFamiliares(fams)
+
+        // Cargar documentos compartidos
+        const docsComp = await fetchDocumentosCompartidos()
+        setDocumentosCompartidos(docsComp)
+      } catch (error) {
+        console.error("Error cargando datos:", error)
+      } finally {
+        // Simulamos un pequeño retraso para mostrar el loading
+        setTimeout(() => {
+          setIsLoading(false)
+        }, 500)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Menú de navegación sin la opción "Mi Cuenta"
   const menuItems = [
     { name: "Dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
     { name: "Mis Documentos", icon: <FileText className="w-5 h-5" /> },
     { name: "Familiares", icon: <Users className="w-5 h-5" /> },
     { name: "Compartir Documentos", icon: <Share2 className="w-5 h-5" /> },
-    { name: "Mi Cuenta", icon: <User className="w-5 h-5" /> },
   ]
 
-  // Sample data
-  const documentosEjemplo = [
-    {
-      id: "doc-001",
-      nombre: "Identificación oficial",
-      tipo: "INE",
-      propietario: "Juan Pérez",
-      estado: "Validado",
-      fechaSubida: "2023-10-15",
-      fechaExpiracion: "2028-10-15",
-      tamaño: "2.4 MB",
-      claveAcceso: "INE-JP-001",
-      tieneQR: true,
-    },
-    {
-      id: "doc-002",
-      nombre: "Certificado de nacimiento",
-      tipo: "Acta de nacimiento",
-      propietario: "Juan Pérez",
-      estado: "Validado",
-      fechaSubida: "2023-09-20",
-      fechaExpiracion: "N/A",
-      tamaño: "1.8 MB",
-      claveAcceso: "ACT-JP-002",
-      tieneQR: true,
-    },
-    {
-      id: "doc-003",
-      nombre: "Clave Única de Registro de Población",
-      tipo: "CURP",
-      propietario: "Juan Pérez",
-      estado: "No validado",
-      fechaSubida: "2023-11-05",
-      fechaExpiracion: "N/A",
-      tamaño: "0.5 MB",
-      claveAcceso: "CURP-JP-003",
-      tieneQR: false,
-    },
-    {
-      id: "doc-004",
-      nombre: "Comprobante de domicilio",
-      tipo: "Recibo CFE",
-      propietario: "María Rodríguez",
-      estado: "Validado",
-      fechaSubida: "2023-10-30",
-      fechaExpiracion: "2024-01-30",
-      tamaño: "1.2 MB",
-      claveAcceso: "CFE-MR-004",
-      tieneQR: true,
-    },
-    {
-      id: "doc-005",
-      nombre: "Pasaporte",
-      tipo: "Identificación",
-      propietario: "María Rodríguez",
-      estado: "No validado",
-      fechaSubida: "2023-11-10",
-      fechaExpiracion: "2033-11-10",
-      tamaño: "3.1 MB",
-      claveAcceso: "PAS-MR-005",
-      tieneQR: false,
-    },
-  ]
-
-  const familiaresEjemplo = [
-    {
-      id: "fam-001",
-      nombre: "María Rodríguez",
-      relacion: "Esposa",
-      email: "maria@ejemplo.com",
-      telefono: "+52 555 123 4567",
-      documentos: 4,
-      fechaRegistro: "2023-01-15",
-    },
-    {
-      id: "fam-002",
-      nombre: "Carlos López",
-      relacion: "Hijo",
-      email: "carlos@ejemplo.com",
-      telefono: "+52 555 987 6543",
-      documentos: 2,
-      fechaRegistro: "2023-02-20",
-    },
-    {
-      id: "fam-003",
-      nombre: "Ana López",
-      relacion: "Hija",
-      email: "ana@ejemplo.com",
-      telefono: "+52 555 456 7890",
-      documentos: 3,
-      fechaRegistro: "2023-02-20",
-    },
-    {
-      id: "fam-004",
-      nombre: "Roberto Pérez",
-      relacion: "Padre",
-      email: "roberto@ejemplo.com",
-      telefono: "+52 555 234 5678",
-      documentos: 5,
-      fechaRegistro: "2023-03-10",
-    },
-    {
-      id: "fam-005",
-      nombre: "Sofía Martínez",
-      relacion: "Madre",
-      email: "sofia@ejemplo.com",
-      telefono: "+52 555 876 5432",
-      documentos: 4,
-      fechaRegistro: "2023-03-10",
-    },
-  ]
-
-  const documentosCompartidosEjemplo = [
-    {
-      id: "comp-001",
-      nombre: "Identificación oficial",
-      tipo: "INE",
-      compartidoCon: "María Rodríguez",
-      fechaCompartido: "2023-10-15",
-      expiracion: "2023-12-15",
-      estado: "Activo",
-    },
-    {
-      id: "comp-002",
-      nombre: "Certificado de nacimiento",
-      tipo: "Acta de nacimiento",
-      compartidoCon: "Carlos López",
-      fechaCompartido: "2023-09-20",
-      expiracion: "2023-11-20",
-      estado: "Expirado",
-    },
-    {
-      id: "comp-003",
-      nombre: "Clave Única de Registro de Población",
-      tipo: "CURP",
-      compartidoCon: "Ana López",
-      fechaCompartido: "2023-11-05",
-      expiracion: "2024-01-05",
-      estado: "Activo",
-    },
-    {
-      id: "comp-004",
-      nombre: "Comprobante de domicilio",
-      tipo: "Recibo CFE",
-      compartidoCon: "Roberto Pérez",
-      fechaCompartido: "2023-10-30",
-      expiracion: "2023-12-30",
-      estado: "Activo",
-    },
-    {
-      id: "comp-005",
-      nombre: "Pasaporte",
-      tipo: "Identificación",
-      compartidoCon: "Sofía Martínez",
-      fechaCompartido: "2023-11-10",
-      expiracion: "2023-12-10",
-      estado: "Activo",
-    },
-  ]
-
-  // Filtered data state
-  const [filteredDocuments, setFilteredDocuments] = useState(documentosEjemplo)
-  const [filteredFamiliares, setFilteredFamiliares] = useState(familiaresEjemplo)
-  const [filteredCompartidos, setFilteredCompartidos] = useState(documentosCompartidosEjemplo)
-
-  // Search handlers
-  const handleDocumentSearch = (e) => {
+  // Función para manejar la búsqueda en Dashboard
+  const handleSearch = (e) => {
     const term = e.target.value.toLowerCase()
     setSearchTerm(term)
 
     if (term === "") {
-      setFilteredDocuments(documentosEjemplo)
+      setFilteredDocuments(documentos)
     } else {
-      const filtered = documentosEjemplo.filter(
+      const filtered = documentos.filter(
         (doc) =>
-          doc.nombre.toLowerCase().includes(term) ||
-          doc.tipo.toLowerCase().includes(term) ||
-          doc.propietario?.toLowerCase().includes(term) ||
-          doc.claveAcceso?.toLowerCase().includes(term),
+          (doc.nombre && doc.nombre.toLowerCase().includes(term)) ||
+          (doc.tipo && doc.tipo.toLowerCase().includes(term)) ||
+          (doc.propietario && doc.propietario.toLowerCase().includes(term)) ||
+          (doc.claveAcceso && doc.claveAcceso.toLowerCase().includes(term)),
       )
       setFilteredDocuments(filtered)
     }
   }
 
-  const handleFamiliaresSearch = (e) => {
-    const term = e.target.value.toLowerCase()
-    setSearchTerm(term)
+  // Función para ordenar documentos
+  const handleSort = (field) => {
+    if (filteredDocuments.length === 0) return
 
-    if (term === "") {
-      setFilteredFamiliares(familiaresEjemplo)
-    } else {
-      const filtered = familiaresEjemplo.filter(
-        (familiar) =>
-          familiar.nombre.toLowerCase().includes(term) ||
-          familiar.relacion.toLowerCase().includes(term) ||
-          familiar.email.toLowerCase().includes(term) ||
-          familiar.telefono.includes(term),
-      )
-      setFilteredFamiliares(filtered)
-    }
-  }
-
-  const handleCompartidosSearch = (e) => {
-    const term = e.target.value.toLowerCase()
-    setSearchTerm(term)
-
-    if (term === "") {
-      setFilteredCompartidos(documentosCompartidosEjemplo)
-    } else {
-      const filtered = documentosCompartidosEjemplo.filter(
-        (doc) =>
-          doc.nombre.toLowerCase().includes(term) ||
-          doc.tipo.toLowerCase().includes(term) ||
-          doc.compartidoCon.toLowerCase().includes(term),
-      )
-      setFilteredCompartidos(filtered)
-    }
-  }
-
-  // Sort handlers
-  const handleDocumentSort = (field) => {
     const newDirection = field === sortField && sortDirection === "asc" ? "desc" : "asc"
     setSortField(field)
     setSortDirection(newDirection)
 
     const sorted = [...filteredDocuments].sort((a, b) => {
-      if (field === "documentos" && typeof a[field] === "number") {
-        return newDirection === "asc" ? a[field] - b[field] : b[field] - a[field]
-      } else {
-        if (newDirection === "asc") {
-          return a[field].localeCompare(b[field])
-        } else {
-          return b[field].localeCompare(a[field])
-        }
-      }
-    })
+      if (!a[field] || !b[field]) return 0
 
-    setFilteredDocuments(sorted)
-  }
-
-  const handleFamiliaresSort = (field) => {
-    const newDirection = field === sortField && sortDirection === "asc" ? "desc" : "asc"
-    setSortField(field)
-    setSortDirection(newDirection)
-
-    const sorted = [...filteredFamiliares].sort((a, b) => {
-      if (field === "documentos") {
-        return newDirection === "asc" ? a[field] - b[field] : b[field] - a[field]
-      } else {
-        if (newDirection === "asc") {
-          return a[field].localeCompare(b[field])
-        } else {
-          return b[field].localeCompare(a[field])
-        }
-      }
-    })
-
-    setFilteredFamiliares(sorted)
-  }
-
-  const handleCompartidosSort = (field) => {
-    const newDirection = field === sortField && sortDirection === "asc" ? "desc" : "asc"
-    setSortField(field)
-    setSortDirection(newDirection)
-
-    const sorted = [...filteredCompartidos].sort((a, b) => {
       if (newDirection === "asc") {
         return a[field].localeCompare(b[field])
       } else {
@@ -366,35 +288,45 @@ export default function Dashboard() {
       }
     })
 
-    setFilteredCompartidos(sorted)
+    setFilteredDocuments(sorted)
   }
 
-  // Calculate statistics
-  const totalDocumentos = documentosEjemplo.length
-  const documentosValidados = documentosEjemplo.filter((doc) => doc.estado === "Validado").length
+  // Calcular estadísticas para el Dashboard
+  const totalDocumentos = documentos.length
+  const documentosValidados = documentos.filter((doc) => doc.estado === "Validado").length
   const documentosPendientes = totalDocumentos - documentosValidados
-  const propietariosUnicos = [...new Set(documentosEjemplo.map((doc) => doc.propietario))].length
+  const propietariosUnicos =
+    documentos.length > 0 ? [...new Set(documentos.map((doc) => doc.propietario).filter(Boolean))].length : 0
 
-  // Component for summary cards
-  const ResumenCard = ({ titulo, valor, icono, color }) => (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-      <div className="flex items-center">
-        <div className={`p-3 rounded-full ${color} text-white mr-4`}>{icono}</div>
-        <div>
-          <p className="text-sm text-gray-500">{titulo}</p>
-          <p className="text-2xl font-bold">{valor}</p>
-        </div>
-      </div>
-    </div>
-  )
-
-  // Render content based on active item
+  // Función para renderizar el contenido según el ítem activo
   const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      )
+    }
+
     switch (activeItem) {
       case "Dashboard":
         return (
           <div className="max-w-7xl mx-auto">
-            {/* Summary cards */}
+            {/* Encabezado de página con bienvenida */}
+            <div className="mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                    Bienvenido, {userData?.nombre || "Usuario"}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Gestiona y visualiza todos tus documentos y archivos familiares
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tarjetas de resumen */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <ResumenCard
                 titulo="Total Documentos"
@@ -422,7 +354,7 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* Search bar and filters */}
+            {/* Barra de búsqueda y filtros */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="relative flex-1">
@@ -434,15 +366,21 @@ export default function Dashboard() {
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     placeholder="Buscar documentos..."
                     value={searchTerm}
-                    onChange={handleDocumentSearch}
+                    onChange={handleSearch}
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                  <button
+                    onClick={handleFilter}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
                     <Filter className="h-4 w-4 mr-2" />
                     Filtrar
                   </button>
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                  <button
+                    onClick={() => handleAdd("documento")}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Nuevo Documento
                   </button>
@@ -450,119 +388,12 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Documents table */}
+            {/* Tabla de documentos */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("nombre")}
-                      >
-                        <div className="flex items-center">
-                          Nombre
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("tipo")}
-                      >
-                        <div className="flex items-center">
-                          Tipo
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("propietario")}
-                      >
-                        <div className="flex items-center">
-                          Propietario
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("estado")}
-                      >
-                        <div className="flex items-center">
-                          Estado
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        QR
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Clave de Acceso
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredDocuments.map((documento) => (
-                      <tr key={documento.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {documento.nombre}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{documento.tipo}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{documento.propietario}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              documento.estado === "Validado"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
-                            {documento.estado}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {documento.tieneQR ? (
-                            <QrCode className="h-5 w-5 text-primary" />
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{documento.claveAcceso}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
-                            <button className="text-primary hover:text-primary/80">
-                              <Eye className="h-5 w-5" />
-                            </button>
-                            <button className="text-primary hover:text-primary/80">
-                              <Download className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {filteredDocuments.length === 0 && (
-                <div className="text-center py-10">
-                  <p className="text-gray-500">No se encontraron documentos que coincidan con tu búsqueda.</p>
-                </div>
-              )}
+              <EmptyState
+                message="No hay documentos disponibles. Agrega documentos para verlos aquí."
+                icon={<FileText className="h-8 w-8 text-gray-400" />}
+              />
             </div>
           </div>
         )
@@ -570,7 +401,6 @@ export default function Dashboard() {
       case "Mis Documentos":
         return (
           <div className="max-w-7xl mx-auto">
-            {/* Page header */}
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Mis Documentos</h1>
@@ -578,7 +408,7 @@ export default function Dashboard() {
               <p className="text-xs sm:text-sm text-gray-500">Gestiona tus documentos personales</p>
             </div>
 
-            {/* Search bar and filters */}
+            {/* Barra de búsqueda y filtros */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="relative flex-1">
@@ -589,8 +419,6 @@ export default function Dashboard() {
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     placeholder="Buscar documentos..."
-                    value={searchTerm}
-                    onChange={handleDocumentSearch}
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -598,118 +426,35 @@ export default function Dashboard() {
                     <Filter className="h-4 w-4 mr-2" />
                     Filtrar
                   </button>
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                    <Upload className="h-4 w-4 mr-2" />
+                  <button
+                    onClick={() => handleAdd("documento")}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
                     Subir Documento
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Documents table */}
+            {/* Tabla de documentos */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("nombre")}
-                      >
-                        <div className="flex items-center">
-                          Nombre
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("tipo")}
-                      >
-                        <div className="flex items-center">
-                          Tipo
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Fecha de Subida
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Expiración
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleDocumentSort("estado")}
-                      >
-                        <div className="flex items-center">
-                          Estado
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredDocuments.map((documento) => (
-                      <tr key={documento.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {documento.nombre}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{documento.tipo}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{documento.fechaSubida}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {documento.fechaExpiracion}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              documento.estado === "Validado"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
-                            {documento.estado}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
-                            <button className="text-primary hover:text-primary/80">
-                              <Eye className="h-5 w-5" />
-                            </button>
-                            <button className="text-primary hover:text-primary/80">
-                              <Download className="h-5 w-5" />
-                            </button>
-                            <button className="text-primary hover:text-primary/80">
-                              <Edit className="h-5 w-5" />
-                            </button>
-                            <button className="text-red-500 hover:text-red-700">
-                              <Trash2 className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {filteredDocuments.length === 0 && (
-                <div className="text-center py-10">
-                  <p className="text-gray-500">No se encontraron documentos que coincidan con tu búsqueda.</p>
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="bg-gray-100 p-4 rounded-full mb-4">
+                  <FileText className="h-8 w-8 text-gray-400" />
                 </div>
-              )}
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                <p className="text-sm text-gray-500 max-w-md mb-4">
+                  No tienes documentos personales. Sube documentos para verlos aquí.
+                </p>
+                <button
+                  onClick={() => handleAdd("documento")}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2 inline-block" />
+                  Subir Documento
+                </button>
+              </div>
             </div>
           </div>
         )
@@ -717,7 +462,6 @@ export default function Dashboard() {
       case "Familiares":
         return (
           <div className="max-w-7xl mx-auto">
-            {/* Page header */}
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Familiares</h1>
@@ -725,7 +469,7 @@ export default function Dashboard() {
               <p className="text-xs sm:text-sm text-gray-500">Gestiona los miembros de tu familia y sus documentos</p>
             </div>
 
-            {/* Search bar and filters */}
+            {/* Barra de búsqueda y filtros */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="relative flex-1">
@@ -736,8 +480,6 @@ export default function Dashboard() {
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     placeholder="Buscar familiares..."
-                    value={searchTerm}
-                    onChange={handleFamiliaresSearch}
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -745,7 +487,10 @@ export default function Dashboard() {
                     <Filter className="h-4 w-4 mr-2" />
                     Filtrar
                   </button>
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                  <button
+                    onClick={() => handleAdd("familiar")}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Añadir Familiar
                   </button>
@@ -753,128 +498,23 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Family cards for mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4 mb-6">
-              {filteredFamiliares.map((familiar) => (
-                <div key={familiar.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">{familiar.nombre}</h3>
-                      <p className="text-sm text-gray-500">{familiar.relacion}</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button className="text-primary hover:text-primary/80">
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button className="text-red-500 hover:text-red-700">
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Mail className="h-4 w-4 mr-2" />
-                      {familiar.email}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Phone className="h-4 w-4 mr-2" />
-                      {familiar.telefono}
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Documentos:</span>
-                      <span className="font-medium">{familiar.documentos}</span>
-                    </div>
-                  </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="bg-gray-100 p-4 rounded-full mb-4">
+                  <Users className="h-8 w-8 text-gray-400" />
                 </div>
-              ))}
-            </div>
-
-            {/* Family table for desktop */}
-            <div className="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleFamiliaresSort("nombre")}
-                      >
-                        <div className="flex items-center">
-                          Nombre
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleFamiliaresSort("relacion")}
-                      >
-                        <div className="flex items-center">
-                          Relación
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Email
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Teléfono
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleFamiliaresSort("documentos")}
-                      >
-                        <div className="flex items-center">
-                          Documentos
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredFamiliares.map((familiar) => (
-                      <tr key={familiar.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {familiar.nombre}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{familiar.relacion}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{familiar.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{familiar.telefono}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{familiar.documentos}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
-                            <button className="text-primary hover:text-primary/80">
-                              <Edit className="h-5 w-5" />
-                            </button>
-                            <button className="text-red-500 hover:text-red-700">
-                              <Trash2 className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                <p className="text-sm text-gray-500 max-w-md mb-4">
+                  No tienes familiares registrados. Añade familiares para verlos aquí.
+                </p>
+                <button
+                  onClick={() => handleAdd("familiar")}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2 inline-block" />
+                  Añadir Familiar
+                </button>
               </div>
-              {filteredFamiliares.length === 0 && (
-                <div className="text-center py-10">
-                  <p className="text-gray-500">No se encontraron familiares que coincidan con tu búsqueda.</p>
-                </div>
-              )}
             </div>
           </div>
         )
@@ -882,7 +522,6 @@ export default function Dashboard() {
       case "Compartir Documentos":
         return (
           <div className="max-w-7xl mx-auto">
-            {/* Page header */}
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Compartir Documentos</h1>
@@ -892,7 +531,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Search bar and filters */}
+            {/* Barra de búsqueda y filtros */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="relative flex-1">
@@ -903,8 +542,6 @@ export default function Dashboard() {
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     placeholder="Buscar documentos compartidos..."
-                    value={searchTerm}
-                    onChange={handleCompartidosSearch}
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -912,7 +549,10 @@ export default function Dashboard() {
                     <Filter className="h-4 w-4 mr-2" />
                     Filtrar
                   </button>
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                  <button
+                    onClick={() => handleAdd("compartir")}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
                     <Share2 className="h-4 w-4 mr-2" />
                     Compartir Nuevo
                   </button>
@@ -920,368 +560,29 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Shared documents cards for mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4 mb-6">
-              {filteredCompartidos.map((documento) => (
-                <div key={documento.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-gray-900">{documento.nombre}</h3>
-                        <p className="text-xs text-gray-500">{documento.tipo}</p>
-                      </div>
-                    </div>
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        documento.estado === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {documento.estado}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Users className="h-4 w-4 mr-2 text-gray-400" />
-                      Compartido con: {documento.compartidoCon}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                      Expira: {documento.expiracion}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex justify-end space-x-2">
-                    <button className="p-1 text-primary hover:text-primary/80">
-                      <Eye className="h-5 w-5" />
-                    </button>
-                    <button className="p-1 text-primary hover:text-primary/80">
-                      <Download className="h-5 w-5" />
-                    </button>
-                    <button className="p-1 text-primary hover:text-primary/80">
-                      <Share2 className="h-5 w-5" />
-                    </button>
-                  </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="bg-gray-100 p-4 rounded-full mb-4">
+                  <Share2 className="h-8 w-8 text-gray-400" />
                 </div>
-              ))}
-            </div>
-
-            {/* Shared documents table for desktop */}
-            <div className="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleCompartidosSort("nombre")}
-                      >
-                        <div className="flex items-center">
-                          Documento
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleCompartidosSort("compartidoCon")}
-                      >
-                        <div className="flex items-center">
-                          Compartido Con
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Fecha Compartido
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Expiración
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleCompartidosSort("estado")}
-                      >
-                        <div className="flex items-center">
-                          Estado
-                          <ArrowUpDown className="ml-1 h-4 w-4" />
-                        </div>
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredCompartidos.map((documento) => (
-                      <tr key={documento.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
-                              <FileText className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{documento.nombre}</div>
-                              <div className="text-sm text-gray-500">{documento.tipo}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-                              <Users className="h-4 w-4 text-gray-500" />
-                            </div>
-                            <div className="ml-3 text-sm text-gray-500">{documento.compartidoCon}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {documento.fechaCompartido}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                            {documento.expiracion}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              documento.estado === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {documento.estado}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
-                            <button className="text-primary hover:text-primary/80">
-                              <Eye className="h-5 w-5" />
-                            </button>
-                            <button className="text-primary hover:text-primary/80">
-                              <Download className="h-5 w-5" />
-                            </button>
-                            <button className="text-primary hover:text-primary/80">
-                              <Share2 className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {filteredCompartidos.length === 0 && (
-                <div className="text-center py-10">
-                  <p className="text-gray-500">
-                    No se encontraron documentos compartidos que coincidan con tu búsqueda.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )
-
-      case "Mi Cuenta":
-        return (
-          <div className="max-w-7xl mx-auto">
-            {/* Page header */}
-            <div className="mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Configuración de Cuenta</h1>
-              </div>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Administra tu información personal y preferencias de cuenta
-              </p>
-            </div>
-
-            {/* Account settings content */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              {/* Navigation tabs */}
-              <div className="flex overflow-x-auto scrollbar-hide border-b">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                <p className="text-sm text-gray-500 max-w-md mb-4">
+                  No has compartido documentos. Comparte documentos para verlos aquí.
+                </p>
                 <button
-                  className={`px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    activeTab === "Perfil"
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                  onClick={() => setActiveTab("Perfil")}
+                  onClick={() => handleAdd("compartir")}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90"
                 >
-                  Perfil
+                  <Share2 className="h-4 w-4 mr-2 inline-block" />
+                  Compartir Documento
                 </button>
-                <button
-                  className={`px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    activeTab === "Seguridad"
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                  onClick={() => setActiveTab("Seguridad")}
-                >
-                  Seguridad
-                </button>
-                <button
-                  className={`px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    activeTab === "Notificaciones"
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                  onClick={() => setActiveTab("Notificaciones")}
-                >
-                  Notificaciones
-                </button>
-                <button
-                  className={`px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    activeTab === "Privacidad"
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                  onClick={() => setActiveTab("Privacidad")}
-                >
-                  Privacidad
-                </button>
-              </div>
-
-              {/* Tab content */}
-              <div className="p-4 sm:p-6">
-                {activeTab === "Perfil" && (
-                  <div>
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                          placeholder="Tu nombre"
-                          defaultValue="Juan"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                          placeholder="Tu apellido"
-                          defaultValue="Pérez"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                          Correo electrónico
-                        </label>
-                        <input
-                          type="email"
-                          className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                          placeholder="tu@ejemplo.com"
-                          defaultValue="juan@ejemplo.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                        <input
-                          type="tel"
-                          className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                          placeholder="+1 (555) 000-0000"
-                          defaultValue="+52 555 123 4567"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-                      <button className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 order-2 sm:order-1">
-                        Cancelar
-                      </button>
-                      <button className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 order-1 sm:order-2">
-                        Guardar cambios
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "Seguridad" && (
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Cambiar contraseña</h3>
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                          Contraseña actual
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showCurrentPassword ? "text" : "password"}
-                            className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-10"
-                            placeholder="Ingresa tu contraseña actual"
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
-                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          >
-                            {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                          Nueva contraseña
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-10"
-                            placeholder="Ingresa tu nueva contraseña"
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                          Confirmar nueva contraseña
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-10"
-                            placeholder="Confirma tu nueva contraseña"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-                      <button className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 order-2 sm:order-1">
-                        Cancelar
-                      </button>
-                      <button className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 order-1 sm:order-2">
-                        Guardar cambios
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         )
 
       default:
-        return <div>Selecciona una opción del menú</div>
+        return <div>Página no encontrada</div>
     }
   }
 
@@ -1291,23 +592,31 @@ export default function Dashboard() {
       <nav className="fixed top-0 left-0 w-full bg-white text-black shadow-sm z-50 h-16">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex justify-between items-center h-full">
-            {/* Logo and Title */}
-            <a href="/" className="flex items-center text-xl space-x-4 font-bold text-black no-underline">
+            {/* Logo y Título */}
+            <Link href="/" className="flex items-center text-xl space-x-4 font-bold text-black no-underline">
               <div className="relative w-8 h-8">
                 <svg viewBox="0 0 24 24" className="w-8 h-8 text-primary" fill="currentColor">
                   <path d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" />
                 </svg>
               </div>
               <span>FamilyShare</span>
-            </a>
+            </Link>
 
-            {/* Menu for large screens */}
+            {/* Menú para pantallas grandes */}
             <div className="flex items-center space-x-6">
-              <a href="/" className="text-gray-700 hover:text-primary transition-colors">
+              <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
                 Inicio
-              </a>
+              </Link>
 
-              {/* Logout icon */}
+              {/* Nombre del usuario */}
+              {userData && (
+                <div className="hidden md:flex items-center text-gray-700">
+                  <span className="mr-2">Hola,</span>
+                  <span className="font-medium">{userData.nombre || "Usuario"}</span>
+                </div>
+              )}
+
+              {/* Icono de logout */}
               <div className="relative">
                 <button
                   onClick={() => setShowLogoutMenu(!showLogoutMenu)}
@@ -1319,7 +628,10 @@ export default function Dashboard() {
 
                 {showLogoutMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                    <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center">
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                    >
                       <LogOut className="w-4 h-4 mr-2" />
                       Cerrar sesión
                     </button>
@@ -1331,12 +643,8 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="flex-grow p-6 mt-16 ml-0 lg:ml-64">
-        <h1 className="text-3xl font-bold">Bienvenido, {userName}</h1>
-      </div>
-
       <div className="flex flex-1 pt-16">
-        {/* Sidebar for mobile - floating button */}
+        {/* Sidebar para móvil - botón flotante */}
         <div className="lg:hidden">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1346,7 +654,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Overlay to close sidebar on mobile */}
+        {/* Overlay para cerrar sidebar en móvil */}
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
@@ -1357,11 +665,11 @@ export default function Dashboard() {
         {/* Sidebar */}
         <aside
           className={`fixed lg:static inset-y-0 left-0 z-30 w-[80%] sm:w-64 transition-transform duration-300 transform 
-                  ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-                  lg:translate-x-0 bg-white border-r border-gray-200 shadow-sm h-[calc(100vh-4rem)] top-16`}
+                    ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+                    lg:translate-x-0 bg-white border-r border-gray-200 shadow-sm h-[calc(100vh-4rem)] top-16`}
         >
           <div className="flex flex-col h-full">
-            {/* Navigation menu */}
+            {/* Menú de navegación */}
             <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
               {menuItems.map((item) => (
                 <button
@@ -1386,12 +694,304 @@ export default function Dashboard() {
           </div>
         </aside>
 
-        {/* Main content */}
+        {/* Contenido principal */}
         <div className="flex-1 overflow-hidden">
-          {/* Content area */}
+          {/* Área de contenido */}
           <main className="h-full overflow-y-auto p-3 sm:p-6 bg-gray-50">{renderContent()}</main>
         </div>
       </div>
+
+      {/* Modales */}
+      {showFilterModal && (
+        <Modal title="Filtrar" onClose={closeModals}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
+              <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                <option value="">Todos</option>
+                <option value="INE">INE</option>
+                <option value="Pasaporte">Pasaporte</option>
+                <option value="CURP">CURP</option>
+                <option value="Acta de nacimiento">Acta de nacimiento</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                <option value="">Todos</option>
+                <option value="Validado">Validado</option>
+                <option value="No validado">No validado</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de subida</label>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Desde</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Hasta</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {showAddModal && (
+        <Modal
+          title={
+            currentAction === "documento"
+              ? "Nuevo Documento"
+              : currentAction === "familiar"
+                ? "Añadir Familiar"
+                : "Compartir Documento"
+          }
+          onClose={closeModals}
+        >
+          {currentAction === "documento" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del documento</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="Ej: Identificación oficial"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                  <option value="">Seleccionar tipo</option>
+                  <option value="INE">INE</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                  <option value="CURP">CURP</option>
+                  <option value="Acta de nacimiento">Acta de nacimiento</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                  <div className="space-y-1 text-center">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400"
+                      stroke="currentColor"
+                      fill="none"
+                      viewBox="0 0 48 48"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <div className="flex text-sm text-gray-600">
+                      <label
+                        htmlFor="file-upload"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"
+                      >
+                        <span>Subir un archivo</span>
+                        <input id="file-upload" name="file-upload" type="file" className="sr-only" />
+                      </label>
+                      <p className="pl-1">o arrastrar y soltar</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PNG, JPG, PDF hasta 10MB</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentAction === "familiar" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="Ej: María Rodríguez"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Relación</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                  <option value="">Seleccionar relación</option>
+                  <option value="Esposo/a">Esposo/a</option>
+                  <option value="Hijo/a">Hijo/a</option>
+                  <option value="Padre/Madre">Padre/Madre</option>
+                  <option value="Hermano/a">Hermano/a</option>
+                  <option value="Abuelo/a">Abuelo/a</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="Ej: familiar@ejemplo.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="Ej: +52 555 123 4567"
+                />
+              </div>
+            </div>
+          )}
+
+          {currentAction === "compartir" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Documento a compartir</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                  <option value="">Seleccionar documento</option>
+                  <option value="doc-001">Identificación oficial</option>
+                  <option value="doc-002">Certificado de nacimiento</option>
+                  <option value="doc-003">CURP</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Compartir con</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                  <option value="">Seleccionar familiar</option>
+                  <option value="fam-001">María Rodríguez</option>
+                  <option value="fam-002">Carlos López</option>
+                  <option value="fam-003">Ana López</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de expiración</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="flex items-center">
+                  <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary" />
+                  <span className="ml-2 text-sm text-gray-600">Permitir descarga</span>
+                </label>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+
+      {showActionModal && (
+        <Modal
+          title={
+            currentAction === "view"
+              ? "Ver Documento"
+              : currentAction === "download"
+                ? "Descargar Documento"
+                : currentAction === "edit"
+                  ? "Editar Documento"
+                  : "Eliminar Documento"
+          }
+          onClose={closeModals}
+        >
+          {currentAction === "view" && (
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="bg-gray-100 p-8 rounded-lg mb-4 flex items-center justify-center">
+                  <FileText className="h-16 w-16 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium">Vista previa no disponible</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  La vista previa del documento no está disponible en este momento.
+                </p>
+              </div>
+              <button className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90">
+                Abrir documento
+              </button>
+            </div>
+          )}
+
+          {currentAction === "download" && (
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="bg-gray-100 p-8 rounded-lg mb-4 flex items-center justify-center">
+                  <Download className="h-16 w-16 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium">Descargar documento</h3>
+                <p className="text-sm text-gray-500 mt-1">El documento se descargará a tu dispositivo.</p>
+              </div>
+              <button className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90">
+                Iniciar descarga
+              </button>
+            </div>
+          )}
+
+          {currentAction === "edit" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del documento</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  defaultValue="Identificación oficial"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  defaultValue="INE"
+                >
+                  <option value="INE">INE</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                  <option value="CURP">CURP</option>
+                  <option value="Acta de nacimiento">Acta de nacimiento</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de expiración</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  defaultValue="2028-10-15"
+                />
+              </div>
+            </div>
+          )}
+
+          {currentAction === "delete" && (
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="bg-red-100 p-4 rounded-full mb-4 inline-flex">
+                  <Trash2 className="h-8 w-8 text-red-500" />
+                </div>
+                <h3 className="text-lg font-medium">¿Eliminar documento?</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Esta acción no se puede deshacer. El documento será eliminado permanentemente.
+                </p>
+              </div>
+              <div className="flex justify-center space-x-2">
+                <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                  Cancelar
+                </button>
+                <button className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   )
 }
